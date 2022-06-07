@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def array_division(a, b):
     """This function devides to arrays and enforces 0/0=0"""
     ratio = []
@@ -10,6 +11,20 @@ def array_division(a, b):
         else:
             ratio.append(a[i]/b[i])
     return np.array(ratio)
+
+
+def print_progressbar(value, maximum):
+    """This function prints a progress bar"""
+    steps = 20
+    fraction = value/maximum
+    progressbar = '['
+    progressbar += round(fraction*steps)*'='
+    progressbar += '>'
+    progressbar += round((1 - fraction)*steps)*' '
+    progressbar += ']'
+    progressbar += f' {round(fraction*100)} percentage complete'
+    print(progressbar, end='\r')
+
 
 def plot_hist(variable, data_frame_signal, data_frame_background):
     """This function plots the normalized signal and background distribution for a given variable"""
