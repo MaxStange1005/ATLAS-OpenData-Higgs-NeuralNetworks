@@ -81,8 +81,8 @@ def plot_hist_sum(variable, input_data_frames):
     else:
         plt.xlabel(variable['variable'])
     plt.ylabel('Events')
-    plt.savefig('plots/hist_{}.pdf'.format(variable['variable']))
     plt.legend()
+    plt.savefig('plots/hist_{}.pdf'.format(variable['variable']))
     plt.show()
 
 
