@@ -26,9 +26,14 @@ def print_progressbar(value, maximum):
     print(progressbar, end='\r')
 
 
-def plot_hist_sum(variable, input_data_frames):
+def plot_hist(variable, input_data_frames, show_data=True):
     """This function plots the sum off the data frames for a given variable"""
     fig = plt.figure(figsize=(7, 7))
+    if show_data:
+        gs = fig.add_gridspec(2, hspace=0.1, height_ratios=[4, 1])
+        axes = gs.subplots(sharex=True, sharey=False)
+    else:
+        axes = [plt.axes()]
     
     # Order to plot
     process_order = ['llll', 'Zee', 'Zmumu', 'ttbar_lep', 'VBFH125_ZZ4lep', 'WH125_ZZ4lep', 'ZH125_ZZ4lep', 'ggH125_ZZ4lep']
@@ -60,28 +65,64 @@ def plot_hist_sum(variable, input_data_frames):
     
     # Create the histogram
     if 'binning' in variable:
-        hist_signal = plt.hist(events,
+        hist_MC = axes[0].hist(events,
                                weights=weights,
                                bins=variable['binning'],
                                label=labels,
                                color=colors,
                                stacked=True)
-            
     else:
-        hist_signal = plt.hist(events,
+        hist_MC = axes[0].hist(events,
                                weights=weights,
                                label=labels,
                                color=colors,
                                stacked=True)
+
+    if show_data:
+        # Measured data
+        measured_data = []
+        for sample in ['data_A', 'data_B', 'data_C', 'data_D']:
+            measured_data += list(input_data_frames[sample][variable['variable']])
+        if 'binning' in variable:
+            data_num, bin_edges = np.histogram(measured_data, bins=variable['binning'])
+        else:
+            data_num, bin_edges = np.histogram(measured_data)
+        bin_center = 0.5*(bin_edges[1:] + bin_edges[:-1])
+        axes[0].errorbar(
+            bin_center,
+            data_num,
+            yerr = np.sqrt(data_num),
+            color='k',
+            label='data',
+            ls='none',
+            marker = '.',
+        )
+        # Ratio plot
+        axes[1].errorbar(
+            bin_center,
+            array_division(data_num, hist_MC[0][-1]),
+            yerr = array_division(np.sqrt(data_num), hist_MC[0][-1]),
+            color='k',
+            ls='none',
+            marker = '.',
+        )
+        axes[1].axhline(1)
+        axes[1].set(ylabel='data/MC')
+        axes[1].set_ylim([0, 2])
+    
     # Style
-    plt.xlim(hist_signal[1][0], hist_signal[1][-1])
-    plt.ylim(bottom=0)
-    if 'xlabel' in variable:
-        plt.xlabel(variable['xlabel'])
+    if 'binning' in variable:
+        plt.xlim(variable['binning'][0], variable['binning'][-1])
     else:
-        plt.xlabel(variable['variable'])
-    plt.ylabel('Events')
-    plt.legend()
+        plt.xlim(hist_signal[1][0], hist_signal[1][-1])
+    axes[0].set_title('{} distribution'.format(variable['variable']))
+    axes[0].set(ylabel='Events')
+    axes[0].set_ylim(bottom=0)
+    axes[0].legend()
+    if 'xlabel' in variable:
+        axes[-1].set(xlabel=variable['xlabel'])
+    else:
+        axes[-1].set(xlabel=variable['variable'])
     plt.savefig('plots/hist_{}.pdf'.format(variable['variable']))
     plt.show()
 
