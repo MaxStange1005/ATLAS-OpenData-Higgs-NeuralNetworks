@@ -2,6 +2,32 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+def get_dnn_input(data_frames, training_variables, sample_list_signal, sample_list_background):
+    """This function extracts the training values, weights and classification of all signal and background samples"""
+    values = []
+    weights = []
+    classification = []
+    for sample in sample_list_signal + sample_list_background:
+        # Classify signal and background (and skip if data)
+        if sample in sample_list_signal:
+            # 1 if signal
+            classification.append(np.ones(len(data_frames[sample])))
+        elif sample in sample_list_background:
+            # 0 if background
+            classification.append(np.zeros(len(data_frames[sample])))
+        else:
+            continue
+        # input values
+        values.append(data_frames[sample][training_variables])
+        weights.append(data_frames[sample]['totalWeight'])
+
+    # Merge the input
+    values = np.concatenate(values)
+    weights = np.concatenate(weights)
+    classification = np.concatenate(classification)
+    return values, weights, classification
+
+
 def array_division(a, b):
     """This function devides to arrays and enforces 0/0=0"""
     ratio = []
@@ -125,6 +151,7 @@ def plot_hist(variable, input_data_frames, show_data=True):
         axes[-1].set(xlabel=variable['variable'])
     plt.savefig('plots/hist_{}.pdf'.format(variable['variable']))
     plt.show()
+    return 
 
 
 def plot_normed_signal_vs_background(variable, data_frame_signal, data_frame_background):
