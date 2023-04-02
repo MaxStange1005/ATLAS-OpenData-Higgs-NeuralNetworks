@@ -1,25 +1,83 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import itertools
 
 
-def get_dnn_input(data_frames, training_variables, sample_list_signal, sample_list_background):
-    """This function extracts the training values, weights and classification of all signal and background samples"""
+def get_bin_center(bins):
+    """Get the center values of the given array"""
+    center = (bins[1:] + bins[:-1]) / 2
+    return center
+
+
+def get_hists(bins, prediction, classification, weight=None, norm=True):
+    """Create a histogram of the signal and background prediction"""
+    prediction = np.array(list(itertools.chain(*prediction)))
+    # Split by prediction
+    prediction_signal = prediction[classification == 1]
+    prediction_bkg = prediction[classification == 0]
+    if not weight:
+        # Create Histogram
+        hist_signal = np.histogram(prediction_signal, bins)[0]
+        hist_bkg = np.histogram(prediction_bkg, bins)[0]
+    else:
+        weight_signal = weight[classification == 1]
+        weight_bkg = weight[classification == 0]
+        # Create Histogram
+        hist_signal = np.histogram(prediction_signal, bins, weights=weight_signal)[0]
+        hist_bkg = np.histogram(prediction_bkg, bins, weights=weight_bkg)[0]
+
+    # Normalize histogram
+    if norm:
+        hist_signal = hist_signal / hist_signal.sum()
+        hist_bkg = hist_bkg / hist_bkg.sum()
+    return hist_signal, hist_bkg
+
+
+def plot_dnn_output(train_prediction, train_classification, val_prediction=None, val_classification=None):
+    """Create a figure with the DNN classification on train and validation data"""
+    # Create bins
+    bins = np.linspace(0, 1, 41)
+    bins_center = get_bin_center(bins)
+
+    fig, ax = plt.subplots(figsize=(7, 6))
+    # Histograms for train data
+    hist_train_signal, hist_train_bkg = get_hists(bins, train_prediction, train_classification)
+    ax.hist(bins_center, bins=bins, weights=hist_train_signal,
+                 histtype='step', label='train signal', color='b')
+    ax.hist(bins_center, bins=bins, weights=hist_train_bkg,
+                 histtype='step', label='train bkg', color='darkorange')
+    # Histograms for val data
+    if val_prediction is not None and val_classification is not None:
+        hist_val_signal, hist_val_bkg = get_hists(bins, val_prediction, val_classification)
+        ax.plot(bins_center, hist_val_signal, label='val signal', marker='.', ls='', color='b')
+        ax.plot(bins_center, hist_val_bkg, label='val bkg', marker='.', ls='', color='darkorange')
+    ax.legend()
+    return fig
+
+
+def get_dnn_input(data_frames, training_variables, sample_list_signal, sample_list_background, frac=1):
+    """This function extracts the training values, weights and classification of all signal and background samples.
+    If you just want to use a fraction of the data use frac"""
     values = []
     weights = []
     classification = []
     for sample in sample_list_signal + sample_list_background:
+        data = data_frames[sample]
+        # Use just a fraction of the data:
+        if frac < 1:
+            data = data[np.random.rand(len(data)) < frac]
         # Classify signal and background (and skip if data)
         if sample in sample_list_signal:
             # 1 if signal
-            classification.append(np.ones(len(data_frames[sample])))
+            classification.append(np.ones(len(data)))
         elif sample in sample_list_background:
             # 0 if background
-            classification.append(np.zeros(len(data_frames[sample])))
+            classification.append(np.zeros(len(data)))
         else:
             continue
         # input values
-        values.append(data_frames[sample][training_variables])
-        weights.append(data_frames[sample]['totalWeight'])
+        values.append(data[training_variables])
+        weights.append(data['totalWeight'])
 
     # Merge the input
     values = np.concatenate(values)
@@ -149,7 +207,7 @@ def plot_hist(variable, input_data_frames, show_data=True):
         axes[-1].set(xlabel=variable['xlabel'])
     else:
         axes[-1].set(xlabel=variable['variable'])
-    plt.savefig('plots/hist_{}.pdf'.format(variable['variable']))
+    #plt.savefig('plots/hist_{}.pdf'.format(variable['variable']))
     plt.show()
     return 
 
@@ -212,5 +270,5 @@ def plot_normed_signal_vs_background(variable, data_frame_signal, data_frame_bac
     axes[1].text(0.01, 0.95, 'Non-overlap = {}'.format(np.round(non_overlap, 4)),
                  verticalalignment='top', transform=axes[1].transAxes)
 
-    plt.savefig('plots/normed_signal_vs_background_{}.pdf'.format(variable['variable']))
+    #plt.savefig('plots/normed_signal_vs_background_{}.pdf'.format(variable['variable']))
     plt.show()
