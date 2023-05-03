@@ -33,6 +33,26 @@ def get_hists(bins, prediction, classification, weight=None, norm=True):
     return hist_signal, hist_bkg
 
 
+def apply_dnn_model(model, data_frames, variables, sample_list):
+    """Apply the model for all the sample sin the dataframes"""
+    data_frames_apply_dnn = {}
+    for sample in sample_list:
+        print(f'Apply Model for {sample}')
+        # Get the values to apply the model
+        values = data_frames[sample][variables]
+        weights = data_frames[sample]['totalWeight']
+        prediction = model.predict(values)
+        
+        # Convert prediction to array
+        prediction = [element[0] for element in prediction]
+        
+        # Add the prediction for each sample
+        data_frames_apply_dnn[sample] = {}
+        data_frames_apply_dnn[sample]['model_prediction'] = prediction
+        data_frames_apply_dnn[sample]['totalWeight'] = weights
+    return data_frames_apply_dnn
+
+
 def plot_dnn_output(train_prediction, train_classification, val_prediction=None, val_classification=None):
     """Create a figure with the DNN classification on train and validation data"""
     # Create bins
