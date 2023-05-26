@@ -130,7 +130,7 @@ def print_progressbar(value, maximum):
     print(progressbar, end='\r')
 
 
-def plot_hist(variable, input_data_frames, show_data=True):
+def plot_hist(variable, input_data_frames, show_data=False):
     """This function plots the sum off the data frames for a given variable"""
     fig = plt.figure(figsize=(7, 7))
     if show_data:
@@ -227,9 +227,7 @@ def plot_hist(variable, input_data_frames, show_data=True):
         axes[-1].set(xlabel=variable['xlabel'])
     else:
         axes[-1].set(xlabel=variable['variable'])
-    #plt.savefig('plots/hist_{}.pdf'.format(variable['variable']))
-    plt.show()
-    return 
+    return fig
 
 
 def plot_normed_signal_vs_background(variable, data_frame_signal, data_frame_background):
@@ -290,5 +288,4 @@ def plot_normed_signal_vs_background(variable, data_frame_signal, data_frame_bac
     axes[1].text(0.01, 0.95, 'Non-overlap = {}'.format(np.round(non_overlap, 4)),
                  verticalalignment='top', transform=axes[1].transAxes)
 
-    #plt.savefig('plots/normed_signal_vs_background_{}.pdf'.format(variable['variable']))
-    plt.show()
+    return fig
