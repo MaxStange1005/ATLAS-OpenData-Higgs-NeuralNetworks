@@ -1,6 +1,17 @@
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import itertools
+
+
+def merge_data_frames(sample_list, data_frames_dic):
+    """Merge the signal and background data frames"""
+    for sample in sample_list:
+        if sample == sample_list[0]:
+            output_data_frame = data_frames_dic[sample]
+        else:
+            output_data_frame = pd.concat([output_data_frame, data_frames_dic[sample]], axis=0)
+    return output_data_frame
 
 
 def get_bin_center(bins):
@@ -75,7 +86,23 @@ def plot_dnn_output(train_prediction, train_classification, val_prediction=None,
     return fig
 
 
-def get_dnn_input(data_frames, training_variables, sample_list_signal, sample_list_background, frac=1):
+def split_data_frames(data_frames, frac):
+    """Split the data frames"""
+    split1_df = {}
+    split2_df = {}
+    for name, sample in data_frames.items():
+        split_criteria = np.random.rand(len(sample)) < frac
+        # Split the data frames
+        split1_df[name] = sample[split_criteria].copy()
+        split2_df[name] = sample[~split_criteria].copy()
+        
+        # Reweight the weights
+        split1_df[name]['totalWeight'] *= sample['totalWeight'].sum() / split1_df[name]['totalWeight'].sum()
+        split2_df[name]['totalWeight'] *= sample['totalWeight'].sum() / split2_df[name]['totalWeight'].sum()
+    return split1_df, split2_df
+
+
+def get_dnn_input(data_frames, training_variables, sample_list_signal, sample_list_background, frac=1, invert_frac=False):
     """This function extracts the training values, weights and classification of all signal and background samples.
     If you just want to use a fraction of the data use frac"""
     values = []
@@ -83,9 +110,11 @@ def get_dnn_input(data_frames, training_variables, sample_list_signal, sample_li
     classification = []
     for sample in sample_list_signal + sample_list_background:
         data = data_frames[sample]
-        # Use just a fraction of the data:
-        if frac < 1:
-            data = data[np.random.rand(len(data)) < frac]
+        # Use just a fraction of the data
+        if invert_frac:
+            data = data[np.random.rand(len(data)) > frac]
+        else:
+            data = data[np.random.rand(len(data)) <= frac]
         # Classify signal and background (and skip if data)
         if sample in sample_list_signal:
             # 1 if signal
