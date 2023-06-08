@@ -1,0 +1,15 @@
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - conda==22.9.0
+  - pip
+  - tensorflow
+  - notebook
+  - pandas
+  - matplotlib
+  - scikit-learn
+  - seaborn
+  - keras
+  - graphviz
+  - pydot

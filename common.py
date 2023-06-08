@@ -1,5 +1,138 @@
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
+import itertools
+
+
+def merge_data_frames(sample_list, data_frames_dic):
+    """Merge the signal and background data frames"""
+    for sample in sample_list:
+        if sample == sample_list[0]:
+            output_data_frame = data_frames_dic[sample]
+        else:
+            output_data_frame = pd.concat([output_data_frame, data_frames_dic[sample]], axis=0)
+    return output_data_frame
+
+
+def get_bin_center(bins):
+    """Get the center values of the given array"""
+    center = (bins[1:] + bins[:-1]) / 2
+    return center
+
+
+def get_hists(bins, prediction, classification, weight=None, norm=True):
+    """Create a histogram of the signal and background prediction"""
+    prediction = np.array(list(itertools.chain(*prediction)))
+    # Split by prediction
+    prediction_signal = prediction[classification == 1]
+    prediction_bkg = prediction[classification == 0]
+    if not weight:
+        # Create Histogram
+        hist_signal = np.histogram(prediction_signal, bins)[0]
+        hist_bkg = np.histogram(prediction_bkg, bins)[0]
+    else:
+        weight_signal = weight[classification == 1]
+        weight_bkg = weight[classification == 0]
+        # Create Histogram
+        hist_signal = np.histogram(prediction_signal, bins, weights=weight_signal)[0]
+        hist_bkg = np.histogram(prediction_bkg, bins, weights=weight_bkg)[0]
+
+    # Normalize histogram
+    if norm:
+        hist_signal = hist_signal / hist_signal.sum()
+        hist_bkg = hist_bkg / hist_bkg.sum()
+    return hist_signal, hist_bkg
+
+
+def apply_dnn_model(model, data_frames, variables, sample_list):
+    """Apply the model for all the sample sin the dataframes"""
+    data_frames_apply_dnn = {}
+    for sample in sample_list:
+        print(f'Apply Model for {sample}')
+        # Get the values to apply the model
+        values = data_frames[sample][variables]
+        weights = data_frames[sample]['totalWeight']
+        prediction = model.predict(values)
+        
+        # Convert prediction to array
+        prediction = [element[0] for element in prediction]
+        
+        # Add the prediction for each sample
+        data_frames_apply_dnn[sample] = {}
+        data_frames_apply_dnn[sample]['model_prediction'] = prediction
+        data_frames_apply_dnn[sample]['totalWeight'] = weights
+    return data_frames_apply_dnn
+
+
+def plot_dnn_output(train_prediction, train_classification, val_prediction=None, val_classification=None):
+    """Create a figure with the DNN classification on train and validation data"""
+    # Create bins
+    bins = np.linspace(0, 1, 41)
+    bins_center = get_bin_center(bins)
+
+    fig, ax = plt.subplots(figsize=(7, 6))
+    # Histograms for train data
+    hist_train_signal, hist_train_bkg = get_hists(bins, train_prediction, train_classification)
+    ax.hist(bins_center, bins=bins, weights=hist_train_signal,
+                 histtype='step', label='train signal', color='b')
+    ax.hist(bins_center, bins=bins, weights=hist_train_bkg,
+                 histtype='step', label='train bkg', color='darkorange')
+    # Histograms for val data
+    if val_prediction is not None and val_classification is not None:
+        hist_val_signal, hist_val_bkg = get_hists(bins, val_prediction, val_classification)
+        ax.plot(bins_center, hist_val_signal, label='val signal', marker='.', ls='', color='b')
+        ax.plot(bins_center, hist_val_bkg, label='val bkg', marker='.', ls='', color='darkorange')
+    ax.legend()
+    return fig
+
+
+def split_data_frames(data_frames, frac):
+    """Split the data frames"""
+    split1_df = {}
+    split2_df = {}
+    for name, sample in data_frames.items():
+        split_criteria = np.random.rand(len(sample)) < frac
+        # Split the data frames
+        split1_df[name] = sample[split_criteria].copy()
+        split2_df[name] = sample[~split_criteria].copy()
+        
+        # Reweight the weights
+        split1_df[name]['totalWeight'] *= sample['totalWeight'].sum() / split1_df[name]['totalWeight'].sum()
+        split2_df[name]['totalWeight'] *= sample['totalWeight'].sum() / split2_df[name]['totalWeight'].sum()
+    return split1_df, split2_df
+
+
+def get_dnn_input(data_frames, training_variables, sample_list_signal, sample_list_background, frac=1, invert_frac=False):
+    """This function extracts the training values, weights and classification of all signal and background samples.
+    If you just want to use a fraction of the data use frac"""
+    values = []
+    weights = []
+    classification = []
+    for sample in sample_list_signal + sample_list_background:
+        data = data_frames[sample]
+        # Use just a fraction of the data
+        if invert_frac:
+            data = data[np.random.rand(len(data)) > frac]
+        else:
+            data = data[np.random.rand(len(data)) <= frac]
+        # Classify signal and background (and skip if data)
+        if sample in sample_list_signal:
+            # 1 if signal
+            classification.append(np.ones(len(data)))
+        elif sample in sample_list_background:
+            # 0 if background
+            classification.append(np.zeros(len(data)))
+        else:
+            continue
+        # input values
+        values.append(data[training_variables])
+        weights.append(data['totalWeight'])
+
+    # Merge the input
+    values = np.concatenate(values)
+    weights = np.concatenate(weights)
+    classification = np.concatenate(classification)
+    return values, weights, classification
 
 
 def array_division(a, b):
@@ -26,9 +159,14 @@ def print_progressbar(value, maximum):
     print(progressbar, end='\r')
 
 
-def plot_hist_sum(variable, input_data_frames):
+def plot_hist(variable, input_data_frames, show_data=False):
     """This function plots the sum off the data frames for a given variable"""
     fig = plt.figure(figsize=(7, 7))
+    if show_data:
+        gs = fig.add_gridspec(2, hspace=0.1, height_ratios=[4, 1])
+        axes = gs.subplots(sharex=True, sharey=False)
+    else:
+        axes = [plt.axes()]
     
     # Order to plot
     process_order = ['llll', 'Zee', 'Zmumu', 'ttbar_lep', 'VBFH125_ZZ4lep', 'WH125_ZZ4lep', 'ZH125_ZZ4lep', 'ggH125_ZZ4lep']
@@ -60,30 +198,65 @@ def plot_hist_sum(variable, input_data_frames):
     
     # Create the histogram
     if 'binning' in variable:
-        hist_signal = plt.hist(events,
+        hist_MC = axes[0].hist(events,
                                weights=weights,
                                bins=variable['binning'],
                                label=labels,
                                color=colors,
                                stacked=True)
-            
     else:
-        hist_signal = plt.hist(events,
+        hist_MC = axes[0].hist(events,
                                weights=weights,
                                label=labels,
                                color=colors,
                                stacked=True)
+
+    if show_data:
+        # Measured data
+        measured_data = []
+        for sample in ['data_A', 'data_B', 'data_C', 'data_D']:
+            measured_data += list(input_data_frames[sample][variable['variable']])
+        if 'binning' in variable:
+            data_num, bin_edges = np.histogram(measured_data, bins=variable['binning'])
+        else:
+            data_num, bin_edges = np.histogram(measured_data)
+        bin_center = 0.5*(bin_edges[1:] + bin_edges[:-1])
+        axes[0].errorbar(
+            bin_center,
+            data_num,
+            yerr = np.sqrt(data_num),
+            color='k',
+            label='data',
+            ls='none',
+            marker = '.',
+        )
+        # Ratio plot
+        axes[1].errorbar(
+            bin_center,
+            array_division(data_num, hist_MC[0][-1]),
+            yerr = array_division(np.sqrt(data_num), hist_MC[0][-1]),
+            color='k',
+            ls='none',
+            marker = '.',
+        )
+        axes[1].axhline(1)
+        axes[1].set(ylabel='data/MC')
+        axes[1].set_ylim([0, 2])
+    
     # Style
-    plt.xlim(hist_signal[1][0], hist_signal[1][-1])
-    plt.ylim(bottom=0)
-    if 'xlabel' in variable:
-        plt.xlabel(variable['xlabel'])
+    if 'binning' in variable:
+        plt.xlim(variable['binning'][0], variable['binning'][-1])
     else:
-        plt.xlabel(variable['variable'])
-    plt.ylabel('Events')
-    plt.savefig('plots/hist_{}.pdf'.format(variable['variable']))
-    plt.legend()
-    plt.show()
+        plt.xlim(hist_signal[1][0], hist_signal[1][-1])
+    axes[0].set_title('{} distribution'.format(variable['variable']))
+    axes[0].set(ylabel='Events')
+    axes[0].set_ylim(bottom=0)
+    axes[0].legend()
+    if 'xlabel' in variable:
+        axes[-1].set(xlabel=variable['xlabel'])
+    else:
+        axes[-1].set(xlabel=variable['variable'])
+    return fig
 
 
 def plot_normed_signal_vs_background(variable, data_frame_signal, data_frame_background):
@@ -144,5 +317,4 @@ def plot_normed_signal_vs_background(variable, data_frame_signal, data_frame_bac
     axes[1].text(0.01, 0.95, 'Non-overlap = {}'.format(np.round(non_overlap, 4)),
                  verticalalignment='top', transform=axes[1].transAxes)
 
-    plt.savefig('plots/normed_signal_vs_background_{}.pdf'.format(variable['variable']))
-    plt.show()
+    return fig
