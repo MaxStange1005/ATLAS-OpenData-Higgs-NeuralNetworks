@@ -10,6 +10,7 @@ dependencies:
   - pandas
   - matplotlib
   - scikit-learn
+  - scipy
   - seaborn
   - keras
   - graphviz
