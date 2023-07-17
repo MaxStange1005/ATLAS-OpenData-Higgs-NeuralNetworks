@@ -66,11 +66,20 @@ they must be executed in the specified order.
 ### Chapter 8:
 Setup your own analysis. Work in Progress
 
+## Recommended Prior Knowledge of the Student
+
+- Basics of particle physics
+  - Particles of the standard model (leptons, neutrinos, Z boson, Higgs bososn) and their properties
+  - Energy, momentum, and charge conservation
+  - Reconstructed variables of the ATLAS detector (transverse momentum, invariant mass,...)
+- Programming with python
+  - Creating functions and loops
+  - Knowledge of numpy (required) and maybe also pandas (helpful but not necessary)
+  - Jupyter Notebook
+- Basic concepts of machine learning
+
 ## Student Notebook and Solution Notebook
 Work in Progress
 
 ## TODO:
 - Explanation of training metric
-- cleanup common.py
-- Chapter 8
-- Student notebook
