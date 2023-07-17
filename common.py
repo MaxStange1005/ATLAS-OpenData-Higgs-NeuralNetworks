@@ -3,6 +3,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import itertools
 
+# Random state
+random_state = 21
+_ = np.random.RandomState(random_state)
+
 
 def merge_data_frames(sample_list, data_frames_dic):
     """Merge the signal and background data frames"""
