@@ -64,10 +64,14 @@ they must be executed in the specified order.
 - Comparison of the models created in chapter 2, chapter 4, and chapter 5
 
 ### Chapter 8:
-Setup your own analysis. Work in Progress
+- Now use all low-level variables
+- Load baseline model
+- Create better model and validate performance via cross-validation
+- Calculate Higgs significance
+- Compare results to other chapters
+
 
 ## Recommended Prior Knowledge of the Student
-
 - Basics of particle physics
   - Particles of the standard model (leptons, neutrinos, Z boson, Higgs bososn) and their properties
   - Energy, momentum, and charge conservation
@@ -82,4 +86,4 @@ Setup your own analysis. Work in Progress
 Work in Progress
 
 ## TODO:
-- Explanation of training metric
+- How to distribute data?
