@@ -368,7 +368,7 @@ def plot_hist(variable: Dict[str, Union[str, List, Dict]],
     if 'binning' in variable:
         plt.xlim(variable['binning'][0], variable['binning'][-1])
     else:
-        plt.xlim(hist_signal[1][0], hist_signal[1][-1])
+        plt.xlim(hist_simulation[1][0], hist_simulation[1][-1])
     axes[0].set_title('{} distribution'.format(variable['variable']))
     axes[0].set(ylabel='Events')
     axes[0].set_ylim(bottom=0)
