@@ -80,22 +80,20 @@ def _get_hists(bins: np.ndarray, prediction: np.ndarray, classification: np.ndar
     return hist_signal, hist_bkg
 
 
-def apply_dnn_model(model: Sequential, data_frames: Dict[str, pd.DataFrame], variables: List[str],
-                    sample_list: List[str]) -> Dict[str, pd.DataFrame]:
+def apply_dnn_model(model: Sequential, data_frames: Dict[str, pd.DataFrame], variables: List[str]) -> Dict[str, pd.DataFrame]:
     """Apply the provided Keras model to all the samples in the dataframes.
 
     Parameters:
         model (Sequential): The Keras model to apply.
         data_frames (Dict[str, pd.DataFrame]): A dictionary with sample names and their corresponding pandas dataframes.
         variables (List[str]): The variables used by the model.
-        sample_list (List[str]): A list of sample names to apply the model on.
 
     Returns:
         Dict[str, pd.DataFrame]: A dictionary with sample names and their corresponding classifications
         and event weights in pandas dataframes.
     """
     data_frames_apply_dnn = {}
-    for sample in sample_list:
+    for sample in data_frames:
         print(f'Applying Model for {sample}')
         # Get the values to apply the model
         values = data_frames[sample][variables]

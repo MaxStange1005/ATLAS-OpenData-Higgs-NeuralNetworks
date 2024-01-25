@@ -15,7 +15,7 @@ steps to get the correct environment and test it:
 https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html
 2. Import the environment environment.yml<br>
 Within the shell use `conda env create -n ml_labcourse --file environment.yml`<br>
-If you are using a machine with an Apple M1 chip use `conda env create -n ml_labcourse --file environment.yml`
+If you are using a machine with an Apple M1 chip use `conda env create -n ml_labcourse --file environment_mac_m1.yml`
 3. Activate the conda environment<br>
 `conda activate ml_labcourse`
 4. Open a jupyter notebook<br>
