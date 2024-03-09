@@ -9,6 +9,8 @@ dependencies:
   - pandas
   - matplotlib
   - scikit-learn
+  - ipywidgets
+  - ipympl
   - scipy
   - seaborn
   - keras
