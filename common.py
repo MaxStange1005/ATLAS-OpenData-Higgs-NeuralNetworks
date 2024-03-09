@@ -80,6 +80,102 @@ def _get_hists(bins: np.ndarray, prediction: np.ndarray, classification: np.ndar
     return hist_signal, hist_bkg
 
 
+def generate_gaussian_points(mean: float, cov_matrix: np.ndarray, num_points: int) -> np.ndarray:
+    """
+    Generate points from a Gaussian distribution.
+
+    Parameters:
+        mean (float): The mean of the Gaussian distri bution.
+        cov_matrix (np.ndarray): The covariance matrix of the Gaussian distribution.
+        num_points (int): The number of points to generate.
+
+    Returns:
+        np.ndarray: The generated points.
+    """
+    points = np.random.multivariate_normal(mean, cov_matrix, num_points)
+    return points
+
+
+def classification_scatter_plot(point_coordinates: np.ndarray, point_predictions: np.ndarray) -> Tuple[figure.Figure, List[plt.Axes]]:
+    """Create a scatter plot for classification with color-coded predictions.
+
+    Parameters:
+        point_coordinates (np.ndarray): Coordinates of the points to plot, where each point is represented by its (x, y) pair.
+        point_predictions (np.ndarray): Predictions for each point, used to color-code the scatter plot. Expected to be a flat array or one-dimensional.
+
+    Returns:
+        Tuple[figure.Figure, plt.Axes]: A tuple containing the figure and axes objects of the created scatter plot. This allows for further customization or integration with other plots outside the function.
+    """
+    # Create a figure and an axes instance
+    fig, ax = plt.subplots()
+    
+    # Create a scatter plot with custom colors
+    scatter = ax.scatter(point_coordinates[:, 0], point_coordinates[:, 1], c=point_predictions.flatten(), cmap='coolwarm', vmin=0, vmax=1, alpha=0.5, s=10)
+    
+    # Add a color bar
+    cbar = fig.colorbar(scatter, ax=ax)
+    
+    # Set custom color bar ticks and labels
+    cbar.set_ticks([0, 1])  # Set the ticks
+    cbar.set_ticklabels(['$0~=~$Set 1', '$1~=~$Set 2'])  # Set the tick labels
+    
+    # Set axis labels
+    ax.set_xlabel('X-axis')
+    ax.set_ylabel('Y-axis')
+    
+    return fig, ax
+
+
+def visualise_training_minimal_dnn(epoch: int, weight1_history: List[float], weight2_history: List[float], 
+                                   point_coordinates: np.ndarray, point_labels: np.ndarray):
+    """
+    Visualises the progression of training for a minimal DNN model through three subplots:
+    1. The trajectory of weight updates.
+    2. The distribution of prediction scores for two sets.
+    3. The prediction for each point colored by its prediction score.
+
+    Parameters:
+        epoch (int): The current epoch of training.
+        weight1_history (List[float]): A list of weight1 values over epochs.
+        weight2_history (List[float]): A list of weight2 values over epochs.
+        point_coordinates (np.ndarray): A 2D array of point coordinates.
+        point_labels (np.ndarray): An array of true labels for the points.
+    """
+    x = point_coordinates[:, 0]
+    y = point_coordinates[:, 1]
+    # Get the current weight
+    weight1_current = weight1_history[epoch - 1]
+    weight2_current = weight2_history[epoch - 1]
+    prediction = 1 / (1 + np.exp(-(x * weight1_current + y * weight2_current)))
+
+    fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(12, 4))
+
+    # Plot the weights
+    axes[0].plot(weight1_current, weight2_current, 'ro')
+    # The weight history so far
+    if epoch > 1:
+        weight1_so_far = weight1_history[:epoch - 1]
+        weight2_so_far = weight2_history[:epoch - 1]
+        axes[0].plot(weight1_so_far, weight2_so_far, 'ro', alpha=0.3)
+    axes[0].set_xlabel('Weight 1')
+    axes[0].set_ylabel('Weight 2')
+    axes[0].set_xlim([-0.5, 3])
+    axes[0].set_ylim([-0.5, 3])
+    axes[0].grid(True)
+
+    # Assuming common._get_bin_center and common._get_hists are defined elsewhere
+    bins = np.linspace(0, 1, 41)
+    bins_center = _get_bin_center(bins)  # Assume returns the center of bins
+    hist_set1, hist_set2 = _get_hists(bins, [[p] for p in prediction], point_labels)  # Assume returns histograms for two sets
+    axes[1].hist(bins_center, bins=bins, weights=hist_set1, histtype='step', label='Set 1', color='b')
+    axes[1].hist(bins_center, bins=bins, weights=hist_set2, histtype='step', label='Set 2', color='darkorange')
+    axes[1].legend(loc='upper center')
+
+    # Plot prediction for each point
+    axes[2].scatter(x, y, c=prediction, cmap='coolwarm', vmin=0, vmax=1, alpha=0.5, s=10)
+    plt.show()
+
+
 def apply_dnn_model(model: Sequential, data_frames: Dict[str, pd.DataFrame], variables: List[str]) -> Dict[str, pd.DataFrame]:
     """Apply the provided Keras model to all the samples in the dataframes.
 
