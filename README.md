@@ -1,31 +1,84 @@
 # Hunt for the Higgs Boson with Neural Networks
-This is a jupyter notebook course introducing to Higgs analysis in combination with neural networks.
+This is a jupyter notebook course introducing Higgs to ZZ analysis in combination with neural networks.
 The aim is to be able to understand analysis searching for signal contributions by machine learning.
 
-The input data was created by 13 TeV ATLAS open data available at http://opendata.atlas.cern/release/2020/documentation/index.html
+The input data was created from 13 TeV [ATLAS open data](https://opendata.atlas.cern).
 
 For more information read:<br>
 Review of the 13 TeV ATLAS Open Data release, Techn. Ber., CERN, 2020, url: http://cds.cern.ch/record/2707171
 
-## Set Up the Environment
+## Setup the environment
 
-We use Anaconda to get the correct environment and all necessary packages. Follow these
-steps to get the correct environment and test it:
+Anaconda/miniforge is used to get the correct environment and all necessary packages. Follow these steps to get the correct environment and test it. In general, Miniforge is recommended since it can speed up the setup process a lot.
+
+Installation with conda:
 1. Install Anaconda:<br>
 https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html
-2. Import the environment environment.yml<br>
-Within the shell use `conda env create -n ml_labcourse --file environment.yml`<br>
-If you are using a machine with an Apple M1 chip use `conda env create -n ml_labcourse --file environment_mac_m1.yml`
-3. Activate the conda environment<br>
-`conda activate ml_labcourse`
-4. Open a jupyter notebook<br>
+2. Create the environment:
+    - Within the shell use:<br>
+    `conda env create -n ml_labcourse --file environment.yml`
+    - If you are using a machine with an Apple M1 chip use:<br>
+    `conda env create -n ml_labcourse --file environment_mac_m1.yml`
+
+Installation with Miniforge for Mac/Linux:
+1. Install Miniforge:<br>
+https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html
+2. Open a shell and navigate into the neural network course directory
+3. Create the environment:
+    - Within the shell use:<br>
+    `mamba env create -n ml_labcourse --file environment.yml`
+    - If you are using a machine with an Apple M1 chip use:<br>
+    `mamba env create -n ml_labcourse --file environment_mac_m1.yml`
+
+Installation with Miniforge for Windows:
+1. Install Miniforge:<br>
+https://github.com/conda-forge/miniforge#miniforge3<br>
+Since you are using Windows you probably have to additionally confirm the downloading and installation.
+During installation select that you want the Mini Forge Prompt in Windows Start Menu (is probably already selected by default)
+2. Start the prompt in your Windows Start Menu as administrator (a shell will open)
+3. Navigate into the neural network course directory
+4. Create the environment:<br>
+`mamba env create --name ml_labcourse -f environment.yml`
+
+#### Test environment
+
+To run and test the notebooks:
+1. Mac/Linux:<br>
+Open a shell and navigate into the neural network course directory<br>
+Windows:<br>
+Start your Mini Forge prompt and navigate into the neural network course directory
+2. Activate the conda environment:<br>
+`conda activate ml_labcourse`<br>
+What if the environment cannot be found?
+Get the list of available environments<br>
+    `conda env list`
+    - If there is an environment `/path/to/ml_labcourse` you can directly activate this path<br>
+    `conda activate /path/to/ml_labcourse`
+3. Open a jupyter notebook:<br>
 `jupyter notebook`
-5. Open test_setup.ipynb and execute the cells
-If no error occurred you are done :)
+4. Open `test_setup.ipynb` and execute the cells
+
+## Input Data
+
+As already mentioned, the input data was created from 13 TeV [ATLAS open data](https://opendata.atlas.cern).
+
+The input data for this course is available as csv files at the TU Dresden Datashare:
+https://datashare.tu-dresden.de/s/ZkAgdTyWfHStybw
+
+Download this zip file and unzip it into the directory of the notebooks.
 
 ## Content
-This course is split in several chapters. Since the chapters build on each other and partly also use the previous outputs,
-they must be executed in the specified order.
+This course is split into several chapters. Since the chapters build on each other and partly also use the previous outputs, they must be executed in the specified order.
+
+Chapter 0 is recommended for a brief introduction to neural networks. It is independent of the rest of the notebooks and can be used, for example, as preparation for this course.
+
+For chapters 1 to 8, a student notebook and a ready-to-use notebook with the solutions are provided
+
+### Chapter 0: A Neural Network with just one Neuron?
+This chapter is independent of the following ones and can be used as an introduction to neural networks.
+- Create training data
+- Build a neural network with just one neuron
+- Visualize the training progress
 
 ### Chapter 1: Introduction and Data Preparation
 - Introduction to the Higgs boson measurement at ATLAS experiment and the golden channel H to ZZ
@@ -40,8 +93,8 @@ they must be executed in the specified order.
 - Save and load the model
 
 ### Chapter 3: Evaluate and Apply a Neural Network
-- Evaluate and apply the model on training data
-- Apply the model on test data to get a theoretical prediction for unseen data
+- Evaluate and apply the model to training data
+- Apply the model to test data to get a theoretical prediction for unseen data
 
 ### Chapter 4: Validation Data and Early Stopping
 - Introduction to under- and overtraining
@@ -51,7 +104,7 @@ they must be executed in the specified order.
 
 ### Chapter 5: Training with Event Weights
 - Application of weights for training
-- Corrections on events weights to enable a successful training
+- Corrections on events weights to enable successful training
 
 ### Chapter 6: Cross-Validation
 - Introduction to cross-validation
@@ -59,14 +112,14 @@ they must be executed in the specified order.
 
 ### Chapter 7: Application for Higgs Search
 - Introduction to significance calculation
-- Calculate significance by cut on model prediction
+- Calculate significance by a cut on model prediction
 - Find the best cut value
 - Comparison of the models created in chapter 2, chapter 4, and chapter 5
 
 ### Chapter 8:
 - Now use all low-level variables
 - Load baseline model
-- Create better model and validate performance via cross-validation
+Create a better model and validate performance via cross-validation
 - Calculate Higgs significance
 - Compare results to other chapters
 
@@ -81,9 +134,3 @@ they must be executed in the specified order.
   - Knowledge of numpy (required) and maybe also pandas (helpful but not necessary)
   - Jupyter Notebook
 - Basic concepts of machine learning
-
-## Student Notebook and Solution Notebook
-Work in Progress
-
-## TODO:
-- How to distribute data?
