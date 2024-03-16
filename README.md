@@ -72,7 +72,11 @@ This course is split into several chapters. Since the chapters build on each oth
 
 Chapter 0 is recommended for a brief introduction to neural networks. It is independent of the rest of the notebooks and can be used, for example, as preparation for this course.
 
-For chapters 1 to 8, a student notebook and a ready-to-use notebook with the solutions are provided
+For chapters 1 to 7, a student notebook and a ready-to-use notebook with the solutions are provided.
+Since chapter 8 is usually used as homework for the students its solution is encrypted. As this chapter is primarily about designing your own network, an explicit solution is not very relevant. However, if there is still a need for an "official" solution, ask for the password and decrypt the chapter:
+
+`openssl aes-256-cbc -d -in chapter8_create_your_own_model.ipynb.enc -out chapter8_create_your_own_model.ipynb`
+
 
 ### Chapter 0: A Neural Network with just one Neuron?
 This chapter is independent of the following ones and can be used as an introduction to neural networks.
