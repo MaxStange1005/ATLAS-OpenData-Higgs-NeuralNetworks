@@ -193,14 +193,14 @@ def apply_dnn_model(model: Sequential, data_frames: Dict[str, pd.DataFrame], var
         print(f'Applying Model for {sample}')
         # Get the values to apply the model
         values = data_frames[sample][variables]
-        weights = data_frames[sample]['totalWeight']
+        weights = data_frames[sample]['Weight']
         prediction = model.predict(values)
 
         # Convert prediction to array
         prediction = [element[0] for element in prediction]
 
         # Add the prediction for each sample
-        data_frames_apply_dnn[sample] = pd.DataFrame({'model_prediction': prediction, 'totalWeight': weights})
+        data_frames_apply_dnn[sample] = pd.DataFrame({'model_prediction': prediction, 'Weight': weights})
     return data_frames_apply_dnn
 
 
@@ -257,8 +257,8 @@ def split_data_frames(data_frames: Dict[str, pd.DataFrame],
         split2_df[name] = sample[~split_criteria].copy()
 
         # Reweight the weights
-        split1_df[name]['totalWeight'] *= sample['totalWeight'].sum() / split1_df[name]['totalWeight'].sum()
-        split2_df[name]['totalWeight'] *= sample['totalWeight'].sum() / split2_df[name]['totalWeight'].sum()
+        split1_df[name]['Weight'] *= sample['Weight'].sum() / split1_df[name]['Weight'].sum()
+        split2_df[name]['Weight'] *= sample['Weight'].sum() / split2_df[name]['Weight'].sum()
     return split1_df, split2_df
 
 
@@ -306,7 +306,7 @@ def get_dnn_input(data_frames: Dict[str, pd.DataFrame], variables: List[str],
 
         # Input values
         values.append(data[variables])
-        weights.append(data['totalWeight'])
+        weights.append(data['Weight'])
 
     # Merge the input
     values = np.concatenate(values)
@@ -408,7 +408,7 @@ def plot_hist(variable: Dict[str, Union[str, List, Dict]],
         values = input_data_frames[process]
         labels.append(process)
         events.append(np.array(values[variable['variable']]))
-        weights.append(values['totalWeight'])
+        weights.append(values['Weight'])
         colors.append(process_color[process])
 
     # Create the histogram
@@ -486,8 +486,8 @@ def plot_normed_signal_vs_background(variable: Dict[str, Union[str, List, Dict]]
     Returns:
         Tuple[figure.Figure, List[plt.Axes]]: A tuple containing the figure and list of axes.
     """
-    total_signal = sum(data_frame_signal.totalWeight)
-    total_background = sum(data_frame_background.totalWeight)
+    total_signal = sum(data_frame_signal.Weight)
+    total_background = sum(data_frame_background.Weight)
 
     # Set up subplots
     fig = plt.figure(figsize=(7, 7))
@@ -498,22 +498,22 @@ def plot_normed_signal_vs_background(variable: Dict[str, Union[str, List, Dict]]
     if 'binning' in variable:
         binning = variable['binning']
         hist_signal = axes[0].hist(data_frame_signal[variable['variable']],
-                                   weights=data_frame_signal.totalWeight / total_signal,
+                                   weights=data_frame_signal.Weight / total_signal,
                                    bins=binning,
                                    label='signal',
                                    histtype='step')
         hist_background = axes[0].hist(data_frame_background[variable['variable']],
-                                       weights=data_frame_background.totalWeight / total_background,
+                                       weights=data_frame_background.Weight / total_background,
                                        bins=binning,
                                        label='background',
                                        histtype='step')
     else:
         hist_signal = axes[0].hist(data_frame_signal[variable['variable']],
-                                   weights=data_frame_signal.totalWeight / total_signal,
+                                   weights=data_frame_signal.Weight / total_signal,
                                    label='signal',
                                    histtype='step')
         hist_background = axes[0].hist(data_frame_background[variable['variable']],
-                                       weights=data_frame_background.totalWeight / total_background,
+                                       weights=data_frame_background.Weight / total_background,
                                        label='background',
                                        histtype='step')
         binning = hist_signal[1]
