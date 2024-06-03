@@ -17,4 +17,4 @@ dependencies:
   - graphviz
   - pydot
   - pip:
-    - tensorflow-macos
+    - tensorflow-macos<2.16
