@@ -1,6 +1,7 @@
 channels:
   - apple
   - conda-forge
+  - anaconda
 dependencies:
   - python=3.10
   - conda
@@ -16,5 +17,6 @@ dependencies:
   - keras
   - graphviz
   - pydot
+  - numpy<2.0
   - pip:
     - tensorflow-macos<2.16

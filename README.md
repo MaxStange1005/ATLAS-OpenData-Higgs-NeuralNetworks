@@ -22,7 +22,7 @@ https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html
 
 Installation with Miniforge for Mac/Linux:
 1. Install Miniforge:<br>
-https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html
+https://github.com/conda-forge/miniforge#miniforge3
 2. Open a shell and navigate into the neural network course directory
 3. Create the environment:
     - Within the shell use:<br>
